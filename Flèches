@@ -1,0 +1,59 @@
+import tkinter as tk
+from tkinter import ttk
+import threading
+import time
+
+def create_arrow_canvas(frame, arrow, frequency):
+    label = tk.Label(frame, text=f"Fréquence : {frequency} Hz")
+    label.pack()
+    canvas = tk.Canvas(frame, width=200, height=200)
+    canvas.pack()
+    if arrow == 'up':
+        canvas.create_line(100, 150, 100, 50, arrow=tk.LAST, width=5)
+    elif arrow == 'down':
+        canvas.create_line(100, 50, 100, 150, arrow=tk.LAST, width=5)
+    elif arrow == 'left':
+        canvas.create_line(150, 100, 50, 100, arrow=tk.LAST, width=5)
+    elif arrow == 'right':
+        canvas.create_line(50, 100, 150, 100, arrow=tk.LAST, width=5)
+    return canvas
+
+def blink_arrow(canvas, frequency):
+    while True:
+        canvas.itemconfig(1, state='hidden')
+        time.sleep(1 / frequency)
+        canvas.itemconfig(1, state='normal')
+        time.sleep(1 / frequency)
+
+def create_blinking_arrow(frame, arrow, frequency):
+    canvas = create_arrow_canvas(frame, arrow, frequency)
+    threading.Thread(target=blink_arrow, args=(canvas, frequency), daemon=True).start()
+
+def main():
+    root = tk.Tk()
+    root.title("Arrows Interface")
+    
+    notebook = ttk.Notebook(root)
+    notebook.pack(expand=True, fill='both')
+    
+    # Main window with 4 arrows
+    main_frame = ttk.Frame(notebook)
+    notebook.add(main_frame, text="Main Arrows")
+    arrows = ['right', 'left', 'up', 'down']
+    frequencies = [5, 7, 3, 11]
+    for i, arrow in enumerate(arrows):
+        frame = ttk.Frame(main_frame)
+        frame.grid(row=i//2, column=i%2)
+        create_blinking_arrow(frame, arrow, frequencies[i])
+    
+    # Separate frames for each arrow
+    separate_arrows = ['right', 'left', 'up', 'down']
+    for i, arrow in enumerate(separate_arrows):
+        frame = ttk.Frame(notebook)
+        notebook.add(frame, text=f"Arrow {arrow.capitalize()}")
+        create_blinking_arrow(frame, arrow, frequencies[i])
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
