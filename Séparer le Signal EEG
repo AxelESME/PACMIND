@@ -1,0 +1,49 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Générer un signal EEG fictif (vous devrez remplacer ceci par votre propre signal EEG)
+# Supposons que votre signal EEG est stocké dans un tableau numpy appelé 'eeg_signal'
+# Exemple de génération de signal fictif :
+# eeg_signal = np.random.rand(1000)  # Remplacez cela par votre vrai signal EEG
+
+# Définir les fréquences du signal EEG
+frequence_echantillonnage = 1000  # Fréquence d'échantillonnage en Hz (remplacez par la vôtre)
+temps_signal = 10  # Durée du signal en secondes
+temps = np.linspace(0, temps_signal, temps_signal * frequence_echantillonnage)
+eeg_signal = np.sin(2 * np.pi * 10 * temps) + 0.5 * np.sin(2 * np.pi * 20 * temps) + np.random.randn(len(temps)) * 0.5
+
+# Calculer la transformée de Fourier du signal EEG
+fft_eeg = np.fft.fft(eeg_signal)
+freqs = np.fft.fftfreq(len(eeg_signal), 1 / frequence_echantillonnage)
+freqs = freqs[:len(freqs) // 2]  # Garder uniquement les fréquences positives
+fft_eeg = np.abs(fft_eeg[:len(fft_eeg) // 2])  # Garder uniquement les valeurs absolues positives
+
+# Définir les plages de fréquences pour chaque bande de fréquence
+bandes_frequence = {
+    "Delta": (1, 4),
+    "Theta": (4, 8),
+    "Alpha": (8, 12),
+    "Beta": (12, 30),
+    "Gamma": (30, 100)
+}
+
+# Initialiser les tableaux pour stocker les amplitudes des bandes de fréquence
+amplitudes_bandes = {bande: np.zeros_like(freqs) for bande in bandes_frequence}
+
+# Calculer les amplitudes pour chaque bande de fréquence
+for bande, (freq_inf, freq_sup) in bandes_frequence.items():
+    indices_bande = np.where((freqs >= freq_inf) & (freqs <= freq_sup))
+    amplitudes_bandes[bande] = fft_eeg[indices_bande]
+
+# Tracer les graphiques pour chaque bande de fréquence
+plt.figure(figsize=(12, 8))
+for i, (bande, amplitude) in enumerate(amplitudes_bandes.items(), start=1):
+    plt.subplot(2, 2, i)
+    plt.plot(freqs, amplitude)
+    plt.title(bande + " Band")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Amplitude")
+    plt.grid(True)
+
+plt.tight_layout()
+plt.show()
