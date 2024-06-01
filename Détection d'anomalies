@@ -1,0 +1,51 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Générer un signal EEG fictif (vous devrez remplacer ceci par votre propre signal EEG)
+# Supposons que votre signal EEG est stocké dans un tableau numpy appelé 'eeg_signal'
+# Exemple de génération de signal fictif :
+# eeg_signal = np.random.rand(1000)  # Remplacez cela par votre vrai signal EEG
+
+# Définir les paramètres
+frequence_echantillonnage = 1000  # Fréquence d'échantillonnage en Hz (remplacez par la vôtre)
+temps_signal = 10  # Durée du signal en secondes
+temps = np.linspace(0, temps_signal, temps_signal * frequence_echantillonnage)
+eeg_signal = np.sin(2 * np.pi * 10 * temps) + 0.5 * np.sin(2 * np.pi * 20 * temps) + np.random.randn(len(temps)) * 0.5
+
+# Générer des indices de stimuli visuels fictifs (vous devrez remplacer ceci par vos propres indices de stimuli)
+# Supposons que les stimuli visuels se produisent à des instants de temps aléatoires
+indices_stimuli_visuels = np.sort(np.random.randint(0, len(eeg_signal), size=5))
+
+# Paramètres pour la détection d'anomalies
+window_size = 100  # Taille de la fenêtre pour la moyenne mobile
+seuil_adaptatif = 3.0  # Seuil initial pour détecter les anomalies
+seuil_stimulus = 0.5  # Seuil pour identifier les stimuli visuels (ajustez selon vos besoins)
+
+# Initialiser un tableau pour stocker les indices des anomalies
+indices_anomalies = []
+
+# Calculer la moyenne mobile du signal EEG
+moyenne_mobile = np.convolve(eeg_signal, np.ones(window_size)/window_size, mode='valid')
+
+# Calculer l'écart par rapport à la moyenne mobile
+ecart = np.abs(eeg_signal[window_size-1:] - moyenne_mobile)
+
+# Identifier les anomalies en fonction du seuil adaptatif
+for i, e in enumerate(ecart):
+    if e > seuil_adaptatif:
+        # Vérifier si l'anomalie est un stimulus visuel
+        proche_stimulus = np.any(np.abs(i - indices_stimuli_visuels) <= seuil_stimulus * frequence_echantillonnage)
+        if not proche_stimulus:
+            indices_anomalies.append(i + window_size - 1)
+
+# Tracer le signal EEG avec les anomalies détectées
+plt.figure(figsize=(12, 6))
+plt.plot(temps, eeg_signal, label='EEG Signal')
+plt.plot(temps[indices_anomalies], eeg_signal[indices_anomalies], 'ro', label='Anomalies')
+plt.plot(temps[indices_stimuli_visuels], eeg_signal[indices_stimuli_visuels], 'go', markersize=10, label='Stimuli Visuels')
+plt.title('Signal EEG avec détection d\'anomalies et stimuli visuels')
+plt.xlabel('Temps (s)')
+plt.ylabel('Amplitude')
+plt.legend()
+plt.grid(True)
+plt.show()
