@@ -1,0 +1,56 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+def fft_and_plot(data, column_name):
+    # Sélection de la colonne spécifiée
+    signal = data[column_name]
+    
+    # Calcul de la transformée de Fourier
+    fft_result = np.fft.fft(signal)
+    freqs = np.fft.fftfreq(len(signal), data.index[1] - data.index[0])  # Calcul des fréquences correspondantes
+
+    # Tracé du signal dans le domaine temporel
+    plt.figure(figsize=(12, 8))
+    
+    # Plot du signal temporel
+    plt.subplot(3, 1, 1)
+    plt.plot(data.index, signal)
+    plt.title('Signal dans le domaine temporel')
+    plt.xlabel('Temps (s)')
+    plt.ylabel('Amplitude')
+
+    # Plot du spectre de fréquences
+    plt.subplot(3, 1, 2)
+    plt.plot(freqs, np.abs(fft_result))
+    plt.title('Spectre de fréquences')
+    plt.xlabel('Fréquence (Hz)')
+    plt.ylabel('Amplitude')
+    plt.xlim(0, max(freqs))  # Afficher seulement les fréquences positives
+
+    # Mettre en évidence les harmoniques
+    harmonics = []
+    for harmonic in range(2, 6):  # On met en évidence jusqu'à la 5ème harmonique
+        freq_harmonic = harmonic * freqs[1]
+        harmonics.append((harmonic, np.abs(fft_result[np.where(freqs == freq_harmonic)[0][0]])))
+        plt.axvline(freq_harmonic, color='r', linestyle='--', linewidth=0.5)
+
+    plt.tight_layout()
+
+    # Afficher les valeurs des harmoniques
+    print("Valeurs des harmoniques:")
+    for harmonic, amplitude in harmonics:
+        print(f"Harmonique {harmonic}: {amplitude}")
+
+    plt.show()
+
+# Charger les données à partir du fichier CSV
+data = pd.read_csv(r"C:\Users\puyoa\OneDrive\Bureau\CyKit-master\Donnees3.csv", index_col=0)  # Assurez-vous de spécifier le bon chemin
+
+# Demander à l'utilisateur de choisir le canal
+print("Colonnes disponibles dans le fichier CSV :")
+print(data.columns.tolist())
+column_name = input("Choisissez le canal sur lequel vous voulez appliquer la FFT : ")
+
+# Appeler la fonction pour appliquer la FFT sur le canal choisi et tracer le résultat
+fft_and_plot(data, column_name)
