@@ -1,0 +1,10 @@
+import pandas as pd
+
+# Lire le fichier CSV
+df = pd.read_csv('nom_du_fichier.csv')
+
+# Filtrer les données pour le bruit à 50Hz
+df_sans_bruit_50hz = df[df['Frequence'] != 50]
+
+# Afficher les données sans le bruit à 50Hz
+print(df_sans_bruit_50hz)
